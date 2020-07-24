@@ -38,10 +38,18 @@ export default class Tree {
       }
 
       let l = node.leaf && this.align_bottom ? getLowestNode(this.nodes) : node.level;
-      this.canvas.text(
-          node.value, node.offset + node.width / 2,
-          l * this.fontsize * 3);
-
+      if (node.leaf) {
+          let textArray = this.wrapString(node.value);
+          for (var i in textArray) {
+            i = parseInt(i, 10);
+            this.canvas.text(textArray[i], node.offset + node.width / 2,
+              l * this.fontsize * (i+3));
+          }
+      } else {
+          this.canvas.text(
+            node.value, node.offset + node.width / 2,
+            l * this.fontsize * 3);
+      }
       // Draw subscript (if any)
       if (node.subscript != '') {
         let offset = node.offset + node.width / 2 +
@@ -164,6 +172,15 @@ export default class Tree {
     }
   }
 
+  wrapString(str) {
+      // 最多 2 行，超過 10 個字換行，上少下多
+      if (str.length > 10) {
+          let half = Math.floor(str.length / 2);
+          return [str.substring(0, half - 1), str.substring(half)];
+      }
+      return [str];
+  }
+
   calculateSubscript() {
     let map = new Map();
 
@@ -248,7 +265,7 @@ export default class Tree {
     let max_level =
         this.nodes.reduce((acc, node) => Math.max(acc, node.level), 0);
     this.canvas.resize(
-        max_width, (max_level + 1) * this.fontsize * 3 - this.fontsize);
+        max_width, (max_level + 2) * this.fontsize * 3 - this.fontsize);
   }
 
   parse(s) {
